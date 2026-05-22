@@ -2,10 +2,14 @@ const { app, BrowserWindow, ipcMain, dialog, shell, Menu } = require('electron')
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
+
+// Necessário para AppImage no Linux — chrome-sandbox dentro de FUSE mount não tem setuid
+if (process.platform === 'linux') {
+  app.commandLine.appendSwitch('no-sandbox');
+}
 
 // Suprimir avisos do VAAPI (aceleração de hardware de vídeo)
-// Esses erros são comuns no Linux e não afetam a funcionalidade
-// Apenas desabilita o uso de VAAPI para evitar mensagens de erro no console
 app.commandLine.appendSwitch('disable-features', 'VaapiVideoDecoder');
 
 let mainWindow;
@@ -32,6 +36,45 @@ function getYtDlpCommand() {
 
   // Se não encontrar (fallback), tenta no PATH do sistema
   return binaryName;
+}
+
+// Busca o diretório do Node.js no sistema para o yt-dlp resolver desafios JS do YouTube
+function findNodeDir() {
+  const candidates = [
+    // PATH atual do processo
+    ...( process.env.PATH || '').split(':'),
+    // Caminhos comuns no Linux/macOS
+    '/usr/bin', '/usr/local/bin', '/snap/bin',
+    '/opt/homebrew/bin', '/usr/local/opt/node/bin',
+    // nvm
+    ...( () => {
+      try {
+        const nvmDir = process.env.NVM_DIR || path.join(os.homedir(), '.nvm');
+        const versionsDir = path.join(nvmDir, 'versions', 'node');
+        const versions = fs.readdirSync(versionsDir).sort().reverse();
+        return versions.map(v => path.join(versionsDir, v, 'bin'));
+      } catch { return []; }
+    })(),
+  ];
+
+  for (const dir of candidates) {
+    if (!dir) continue;
+    if (fs.existsSync(path.join(dir, 'node')) || fs.existsSync(path.join(dir, 'nodejs'))) {
+      console.log('[yt-dlp] Node.js encontrado em:', dir);
+      return dir;
+    }
+  }
+  console.warn('[yt-dlp] Node.js não encontrado — desafios JS do YouTube podem falhar');
+  return null;
+}
+
+function buildEnvWithNode(isWindows) {
+  if (isWindows) return process.env;
+  const nodeDir = findNodeDir();
+  if (!nodeDir) return process.env;
+  const currentPath = process.env.PATH || '';
+  if (currentPath.split(':').includes(nodeDir)) return process.env;
+  return { ...process.env, PATH: `${nodeDir}:${currentPath}` };
 }
 
 // Função para verificar se yt-dlp está disponível
@@ -198,7 +241,15 @@ ipcMain.handle('extract-audio', async (event, { videoUrl, cookiesPath, destPath,
     const isWindows = process.platform === 'win32';
 
     // Definir local do ffmpeg (mesmo diretório do yt-dlp)
-    const ffmpegPath = isWindows ? path.dirname(command) : null;
+    let ffmpegPath = null;
+    if (isWindows) {
+      ffmpegPath = path.dirname(command);
+    } else if (app.isPackaged) {
+      const bundledFfmpeg = path.join(process.resourcesPath, 'ffmpeg');
+      if (fs.existsSync(bundledFfmpeg)) {
+        ffmpegPath = process.resourcesPath;
+      }
+    }
 
     let args = [
       '--cookies', cookiesPath,
@@ -208,7 +259,6 @@ ipcMain.handle('extract-audio', async (event, { videoUrl, cookiesPath, destPath,
     ];
 
     if (format === 'video') {
-      // Baixar melhor qualidade de vídeo e áudio em container mp4
       // Importante: não colocar espaços na expressão do formato, senão o yt-dlp interpreta como múltiplos argumentos/URLs
       args = [
         '-f', 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b',
@@ -216,7 +266,6 @@ ipcMain.handle('extract-audio', async (event, { videoUrl, cookiesPath, destPath,
         ...args
       ];
     } else {
-      // Extrair somente áudio
       args = [
         '-x',
         '--audio-format', 'mp3',
@@ -228,8 +277,12 @@ ipcMain.handle('extract-audio', async (event, { videoUrl, cookiesPath, destPath,
       args.unshift('--ffmpeg-location', ffmpegPath);
     }
 
+    // Garante que o yt-dlp encontre o Node.js para resolver desafios JS do YouTube (EJS)
+    const spawnEnv = buildEnvWithNode(isWindows);
+
     const ytdlp = spawn(command, args, {
-      shell: isWindows // No Windows, usar shell ajuda a encontrar o comando no PATH
+      shell: isWindows,
+      env: spawnEnv
     });
 
     let errorOutput = '';

@@ -17,16 +17,21 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '18'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Download yt-dlp for Linux
+        run: |
+          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp
+          chmod +x yt-dlp
 
       - name: Build and publish AppImage and deb
         run: npx electron-builder --linux --publish always
@@ -39,16 +44,31 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '18'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Download yt-dlp for Windows
+        shell: pwsh
+        run: Invoke-WebRequest -Uri "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile "yt-dlp.exe"
+
+      - name: Download ffmpeg for Windows
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -OutFile "ffmpeg.zip"
+          Expand-Archive -Path "ffmpeg.zip" -DestinationPath "ffmpeg_temp" -Force
+          $ffmpeg = Get-ChildItem -Path "ffmpeg_temp" -Recurse -Filter "ffmpeg.exe" | Select-Object -First 1
+          $ffprobe = Get-ChildItem -Path "ffmpeg_temp" -Recurse -Filter "ffprobe.exe" | Select-Object -First 1
+          Copy-Item $ffmpeg.FullName "ffmpeg.exe"
+          Copy-Item $ffprobe.FullName "ffprobe.exe"
+          Remove-Item -Recurse -Force "ffmpeg_temp", "ffmpeg.zip"
 
       - name: Build application
         run: npx electron-builder --win
@@ -56,22 +76,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Windows-Installer
           path: dist/*.exe
           retention-days: 7
 
-  build-macos:
-    name: Build macOS
+  release-macos:
+    name: Build and Publish macOS
     runs-on: macos-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '18'
           cache: 'npm'
@@ -79,14 +99,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build application
-        run: npx electron-builder --mac
+      - name: Download yt-dlp for macOS
+        run: |
+          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o yt-dlp
+          chmod +x yt-dlp
+
+      - name: Copy ffmpeg for macOS
+        run: |
+          cp $(which ffmpeg) ffmpeg
+          cp $(which ffprobe) ffprobe
+          chmod +x ffmpeg ffprobe
+
+      - name: Build and publish DMG
+        run: npx electron-builder --mac --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macOS-Installer
-          path: dist/*.dmg
-          retention-days: 7

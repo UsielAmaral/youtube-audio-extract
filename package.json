@@ -4,6 +4,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "download-binaries": "node download-binaries.js",
     "build": "npx electron-builder",
     "build:linux": "npx electron-builder --linux",
     "build:win": "npx electron-builder --win",
@@ -33,6 +34,7 @@
     "electron-builder": "^26.0.12"
   },
   "build": {
+    "afterPack": "./afterPack.js",
     "appId": "com.youtubeaudioextract.app",
     "productName": "YouTube Audio Extract",
     "directories": {
@@ -45,13 +47,8 @@
       "styles.css",
       "package.json"
     ],
-    "extraResources": [
-      "yt-dlp.exe",
-      "yt-dlp",
-      "ffmpeg.exe",
-      "ffprobe.exe"
-    ],
     "linux": {
+      "extraResources": ["yt-dlp"],
       "target": [
         {
           "target": "AppImage",
@@ -70,6 +67,7 @@
       "maintainer": "Usiel Amaral <suporte@usis.com.br>"
     },
     "win": {
+      "extraResources": ["yt-dlp.exe", "ffmpeg.exe", "ffprobe.exe"],
       "target": [
         {
           "target": "portable",
@@ -82,6 +80,7 @@
       "signAndEditExecutable": false
     },
     "mac": {
+      "extraResources": ["yt-dlp", "ffmpeg", "ffprobe"],
       "target": [
         {
           "target": "dmg",

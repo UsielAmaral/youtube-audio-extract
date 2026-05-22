@@ -32,6 +32,13 @@ out/
 *.exe
 *.zip
 
+# Binários de dependências (baixados via scripts/CI)
+yt-dlp
+yt-dlp_macos
+ffmpeg
+ffprobe
+ffmpeg_temp/
+
 # Arquivos temporários
 *.tmp
 *.log
