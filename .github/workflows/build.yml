@@ -1,131 +1,63 @@
-name: Build Installers
+name: Build and Release
 
 on:
-  workflow_dispatch: # Permite executar manualmente
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 jobs:
-  build:
-    name: Build on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    
+  release-linux:
+    name: Build and Publish Linux
+    runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
-      - name: Build application (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: npx electron-builder --linux
-        continue-on-error: true
+
+      - name: Build and publish AppImage and deb
+        run: npx electron-builder --linux --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Build application (Windows)
-        if: matrix.os == 'windows-latest'
-        run: npx electron-builder --win
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Build application (macOS)
-        if: matrix.os == 'macos-latest'
-        run: npx electron-builder --mac
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: List dist directory
-        if: always()
-        continue-on-error: true
-        run: |
-          echo "Contents of dist directory:"
-          ls -la dist/ 2>/dev/null || dir dist\ 2>nul || echo "dist directory does not exist or is empty"
-        shell: bash
-      
-      - name: Check for artifacts (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        id: check-linux
-        continue-on-error: true
-        run: |
-          ARTIFACTS_EXIST=false
-          if ls dist/*.AppImage dist/*.deb 2>/dev/null | head -1 > /dev/null; then
-            ARTIFACTS_EXIST=true
-            echo "Linux artifacts found"
-          else
-            echo "No Linux artifacts found"
-          fi
-          echo "artifacts_exist=$ARTIFACTS_EXIST" >> $GITHUB_OUTPUT
-        shell: bash
-      
-      - name: Check for artifacts (Windows)
-        if: matrix.os == 'windows-latest'
-        id: check-windows
-        continue-on-error: true
-        run: |
-          ARTIFACTS_EXIST=false
-          if ls dist/*.exe 2>/dev/null | head -1 > /dev/null; then
-            ARTIFACTS_EXIST=true
-            echo "Windows artifacts found"
-          else
-            echo "No Windows artifacts found"
-          fi
-          echo "artifacts_exist=$ARTIFACTS_EXIST" >> $GITHUB_OUTPUT
-        shell: bash
-      
-      - name: Check for artifacts (macOS)
-        if: matrix.os == 'macos-latest'
-        id: check-macos
-        continue-on-error: true
-        run: |
-          ARTIFACTS_EXIST=false
-          if ls dist/*.dmg 2>/dev/null | head -1 > /dev/null; then
-            ARTIFACTS_EXIST=true
-            echo "macOS artifacts found"
-          else
-            echo "No macOS artifacts found"
-          fi
-          echo "artifacts_exist=$ARTIFACTS_EXIST" >> $GITHUB_OUTPUT
-        shell: bash
-      
-      - name: Upload artifacts (Linux)
-        if: matrix.os == 'ubuntu-latest' && steps.check-linux.outputs.artifacts_exist == 'true'
-        uses: actions/upload-artifact@v4
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: Linux-Installer
-          path: |
-            dist/*.AppImage
-            dist/*.deb
-          retention-days: 7
-      
-      - name: Upload artifacts (Windows)
-        if: matrix.os == 'windows-latest' && steps.check-windows.outputs.artifacts_exist == 'true'
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npx electron-builder --win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Windows-Installer
           path: dist/*.exe
-          retention-days: 7
-      
-      - name: Upload artifacts (macOS)
-        if: matrix.os == 'macos-latest' && steps.check-macos.outputs.artifacts_exist == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: macOS-Installer
-          path: dist/*.dmg
           retention-days: 7
