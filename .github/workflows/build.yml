@@ -104,8 +104,8 @@ jobs:
 
       - name: Verify macOS binaries
         run: |
-          lipo -verify_arch x86_64 arm64 ffmpeg
-          lipo -verify_arch x86_64 arm64 ffprobe
+          lipo ffmpeg -verify_arch x86_64 arm64
+          lipo ffprobe -verify_arch x86_64 arm64
           ./ffmpeg -version
           ./ffprobe -version
 

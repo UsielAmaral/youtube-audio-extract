@@ -82,7 +82,7 @@ async function main() {
         }
         const universal = path.join(tempDir, bin);
         execFileSync('lipo', ['-create', ...inputs, '-output', universal], { stdio: 'inherit' });
-        execFileSync('lipo', ['-verify_arch', 'x86_64', 'arm64', universal], { stdio: 'inherit' });
+        execFileSync('lipo', [universal, '-verify_arch', 'x86_64', 'arm64'], { stdio: 'inherit' });
         fs.copyFileSync(universal, bin);
         fs.chmodSync(bin, 0o755);
         console.log(`✅ ${bin} universal (Intel e Apple Silicon) criado`);
