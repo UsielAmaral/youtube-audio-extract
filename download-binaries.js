@@ -1,7 +1,8 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const os = require('os');
+const { execSync, execFileSync } = require('child_process');
 
 const platform = process.platform;
 
@@ -13,6 +14,9 @@ const YTDLP_URLS = {
 
 const FFMPEG_WIN_URL =
   'https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip';
+
+const FFMPEG_MAC_BASE_URL =
+  'https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1';
 
 function download(url, dest) {
   return new Promise((resolve, reject) => {
@@ -66,15 +70,25 @@ async function main() {
     fs.unlinkSync('ffmpeg.zip');
     console.log('✅ ffmpeg.exe e ffprobe.exe baixados');
   } else if (platform === 'darwin') {
-    for (const bin of ['ffmpeg', 'ffprobe']) {
-      try {
-        const src = execSync(`which ${bin}`).toString().trim();
-        fs.copyFileSync(src, bin);
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ffmpeg-macos-'));
+    try {
+      for (const bin of ['ffmpeg', 'ffprobe']) {
+        const inputs = [];
+        for (const arch of ['x64', 'arm64']) {
+          const dest = path.join(tempDir, `${bin}-${arch}`);
+          console.log(`Baixando ${bin} b6.1.1 para darwin-${arch}...`);
+          await download(`${FFMPEG_MAC_BASE_URL}/${bin}-darwin-${arch}`, dest);
+          inputs.push(dest);
+        }
+        const universal = path.join(tempDir, bin);
+        execFileSync('lipo', ['-create', ...inputs, '-output', universal], { stdio: 'inherit' });
+        execFileSync('lipo', ['-verify_arch', 'x86_64', 'arm64', universal], { stdio: 'inherit' });
+        fs.copyFileSync(universal, bin);
         fs.chmodSync(bin, 0o755);
-        console.log(`✅ ${bin} copiado do sistema`);
-      } catch {
-        console.warn(`⚠️  ${bin} não encontrado no PATH — instale via: brew install ffmpeg`);
+        console.log(`✅ ${bin} universal (Intel e Apple Silicon) criado`);
       }
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
     }
   }
 }

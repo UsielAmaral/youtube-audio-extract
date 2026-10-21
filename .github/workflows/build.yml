@@ -99,16 +99,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Download yt-dlp for macOS
-        run: |
-          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o yt-dlp
-          chmod +x yt-dlp
+      - name: Download yt-dlp and universal ffmpeg for macOS
+        run: npm run download-binaries
 
-      - name: Copy ffmpeg for macOS
+      - name: Verify macOS binaries
         run: |
-          cp $(which ffmpeg) ffmpeg
-          cp $(which ffprobe) ffprobe
-          chmod +x ffmpeg ffprobe
+          lipo -verify_arch x86_64 arm64 ffmpeg
+          lipo -verify_arch x86_64 arm64 ffprobe
+          ./ffmpeg -version
+          ./ffprobe -version
 
       - name: Build and publish DMG
         run: npx electron-builder --mac --publish always

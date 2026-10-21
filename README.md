@@ -6,26 +6,34 @@ Aplicativo cross-platform desenvolvido com Electron para extrair áudio MP3 ou b
 
 ### Instaladores Disponíveis
 
-Baixe a versão **v1.0.0** para seu sistema operacional:
+Baixe os arquivos disponíveis na [página de Releases](https://github.com/UsielAmaral/youtube-audio-extract/releases/latest):
 
-| Plataforma | Instalador | Status |
-|------------|-----------|--------|
-| 🐧 **Linux** | [AppImage](https://github.com/Usiel-Amaral/youtube-audio-extract/releases/download/v1.0.0/YouTube.Audio.Extract-1.0.0.AppImage) • [Debian/Ubuntu (.deb)](https://github.com/Usiel-Amaral/youtube-audio-extract/releases/download/v1.0.0/youtube-audio-extract_1.0.0_amd64.deb) | ✅ Disponível |
-| 🪟 **Windows** | [aplicativo portátil](https://github.com/Usiel-Amaral/youtube-audio-extract/releases/download/v1.0.0/YouTube.Audio.Extract.1.0.0.exe) | ✅ Disponível |
-| 🍎 **macOS** | [Ver na página de Releases](https://github.com/Usiel-Amaral/youtube-audio-extract/releases/tag/v1.0.0) | ⏳ Em breve |
-
-👉 **[Ver todas as versões e downloads](https://github.com/Usiel-Amaral/youtube-audio-extract/releases/tag/v1.0.0)**
+| Plataforma | Formato |
+|------------|---------|
+| 🐧 **Linux** | AppImage ou Debian/Ubuntu (.deb) |
+| 🪟 **Windows** | Aplicativo portátil (.exe) |
+| 🍎 **macOS** | DMG para Intel (x64) ou Apple Silicon (arm64) |
 
 ### Instalação Rápida
 
-1. Clique no link do instalador para sua plataforma acima
-2. Ou acesse a [página de Releases v1.0.0](https://github.com/Usiel-Amaral/youtube-audio-extract/releases/tag/v1.0.0)
-3. Baixe o instalador para seu sistema operacional
-4. Execute o instalador e siga as instruções
+1. Acesse a [página de Releases](https://github.com/UsielAmaral/youtube-audio-extract/releases/latest).
+2. Baixe o arquivo correspondente ao seu sistema e arquitetura.
+3. Execute o instalador ou aplicativo portátil.
 
-**Nota:** O [yt-dlp](https://github.com/yt-dlp/yt-dlp) já vem incluído no aplicativo e se atualiza sozinho.
+### Primeira abertura no macOS
 
-**Versão atual:** v1.0.0
+O app não possui assinatura Developer ID nem notarização da Apple. Na primeira abertura, será necessário liberá-lo nos ajustes do macOS:
+
+1. Abra o `.dmg` correspondente ao seu Mac e arraste o app para **Aplicativos**.
+2. Tente abrir **YouTube Audio Extract** uma vez.
+3. Abra **Ajustes do Sistema → Privacidade e Segurança** e clique em **Abrir Mesmo Assim**.
+4. Confirme em **Abrir** e autentique-se se solicitado.
+
+Siga esse procedimento para o app obtido na página oficial de Releases. Veja também as [instruções da Apple](https://support.apple.com/pt-br/102445).
+
+O **yt-dlp** já vem incluído e se atualiza automaticamente. No macOS, **ffmpeg** e **ffprobe** são incluídos como binários universais para Intel e Apple Silicon; não é necessário instalar Homebrew.
+
+**Versão do projeto:** v1.3.1
 
 ## 🚀 Características
 
@@ -117,6 +125,14 @@ youtube-audio-extract/
 ```
 
 ## 🔧 Desenvolvimento
+
+### Preparar binários
+
+```bash
+npm run download-binaries
+```
+
+No macOS, o script baixa `ffmpeg` e `ffprobe` estáticos da release `b6.1.1` do `ffmpeg-static` para as duas arquiteturas e os combina com `lipo`. Para compilar, instale as ferramentas de linha de comando do Xcode (`xcode-select --install`), que fornecem o `lipo`.
 
 ### Executar em modo de desenvolvimento:
 ```bash
