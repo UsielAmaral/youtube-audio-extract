@@ -74,7 +74,7 @@ Para gerar novos instaladores localmente, use os comandos acima (`npm run build:
 
 2. **Tamanho**: Os instaladores serão grandes (100-200MB) pois incluem o Electron completo.
 
-3. **yt-dlp**: Os instaladores **NÃO** incluem o yt-dlp. Os usuários precisam instalá-lo separadamente (veja README.md).
+3. **yt-dlp**: Os instaladores incluem o yt-dlp standalone (`yt-dlp_linux`, `yt-dlp.exe`, `yt-dlp_macos`, baixados por `npm run download-binaries` ou pelo CI). Em execução, o app copia o binário para a pasta de dados do usuário e o atualiza sozinho, então builds antigos continuam funcionando.
 
 4. **Assinatura**: Para distribuir no macOS e Windows, você pode querer assinar os aplicativos (requer certificados pagos).
 

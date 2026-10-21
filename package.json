@@ -1,6 +1,6 @@
 {
   "name": "youtube-audio-extract",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -48,7 +48,9 @@
       "package.json"
     ],
     "linux": {
-      "extraResources": ["yt-dlp"],
+      "extraResources": [
+        "yt-dlp"
+      ],
       "target": [
         {
           "target": "AppImage",
@@ -67,7 +69,11 @@
       "maintainer": "Usiel Amaral <suporte@usis.com.br>"
     },
     "win": {
-      "extraResources": ["yt-dlp.exe", "ffmpeg.exe", "ffprobe.exe"],
+      "extraResources": [
+        "yt-dlp.exe",
+        "ffmpeg.exe",
+        "ffprobe.exe"
+      ],
       "target": [
         {
           "target": "portable",
@@ -80,7 +86,11 @@
       "signAndEditExecutable": false
     },
     "mac": {
-      "extraResources": ["yt-dlp", "ffmpeg", "ffprobe"],
+      "extraResources": [
+        "yt-dlp",
+        "ffmpeg",
+        "ffprobe"
+      ],
       "target": [
         {
           "target": "dmg",

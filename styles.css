@@ -306,6 +306,36 @@ button:disabled {
   border-left: 4px solid #17a2b8;
 }
 
+.engine-info {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #888;
+}
+
+.engine-update-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  background: transparent;
+  color: #666;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.engine-update-btn:hover:not(:disabled) {
+  border-color: #999;
+  color: #333;
+}
+
+.engine-update-btn:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .file-link-container {
   margin-top: 16px;
   text-align: center;

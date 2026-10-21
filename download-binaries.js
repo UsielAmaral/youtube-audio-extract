@@ -6,7 +6,7 @@ const { execSync } = require('child_process');
 const platform = process.platform;
 
 const YTDLP_URLS = {
-  linux: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp',
+  linux: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux',
   darwin: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos',
   win32: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe',
 };

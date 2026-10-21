@@ -23,7 +23,7 @@ Baixe a versão **v1.0.0** para seu sistema operacional:
 3. Baixe o instalador para seu sistema operacional
 4. Execute o instalador e siga as instruções
 
-**Nota:** Você também precisará ter o [yt-dlp](https://github.com/yt-dlp/yt-dlp) instalado no seu sistema.
+**Nota:** O [yt-dlp](https://github.com/yt-dlp/yt-dlp) já vem incluído no aplicativo e se atualiza sozinho.
 
 **Versão atual:** v1.0.0
 
@@ -43,25 +43,11 @@ Baixe a versão **v1.0.0** para seu sistema operacional:
 
 ### Software Necessário
 
-- **yt-dlp**: Ferramenta de linha de comando para download de vídeos
-- **Node.js**: Runtime JavaScript (já incluído no Electron)
+Nenhum além do aplicativo:
 
-### Instalação do yt-dlp
-
-#### Linux (Ubuntu/Debian):
-```bash
-sudo apt install yt-dlp
-```
-
-#### Ou via pip:
-```bash
-pip install yt-dlp
-```
-
-#### Verificar instalação:
-```bash
-yt-dlp --version
-```
+- **yt-dlp**: incluído no instalador. Na primeira execução é copiado para a pasta de dados do usuário e se atualiza automaticamente (no máximo 1x por dia). Também é possível forçar a atualização pelo botão **"Atualizar motor"** na tela principal.
+- **Runtime JavaScript**: os desafios JS do YouTube são resolvidos com o Node.js embutido no próprio Electron.
+- **ffmpeg** (somente Linux): necessário para converter em MP3 — `sudo apt install ffmpeg`. No Windows e macOS já vem incluído.
 
 ## 📦 Instalação
 
@@ -193,5 +179,5 @@ Para contribuir:
 
 ---
 
-**Nota**: Este projeto utiliza yt-dlp para realizar os downloads. Certifique-se de ter o yt-dlp instalado e atualizado no seu sistema.
+**Nota**: Este projeto utiliza yt-dlp para realizar os downloads. O aplicativo mantém o yt-dlp atualizado automaticamente.
 

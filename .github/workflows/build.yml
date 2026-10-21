@@ -30,7 +30,7 @@ jobs:
 
       - name: Download yt-dlp for Linux
         run: |
-          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp
+          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux -o yt-dlp
           chmod +x yt-dlp
 
       - name: Build and publish AppImage and deb

@@ -18,6 +18,8 @@ const progressText = document.getElementById('progress-text');
 const statusMessage = document.getElementById('status-message');
 const fileLinkContainer = document.getElementById('file-link-container');
 const fileLink = document.getElementById('file-link');
+const engineVersion = document.getElementById('engine-version');
+const engineUpdateBtn = document.getElementById('engine-update-btn');
 
 // Estado da aplicação
 let selectedCookiesPath = null;
@@ -205,6 +207,31 @@ fileLink.addEventListener('click', async (e) => {
   }
 });
 
+// Versão do motor yt-dlp
+async function loadEngineVersion() {
+  try {
+    const version = await ipcRenderer.invoke('get-ytdlp-version');
+    engineVersion.textContent = version ? `Motor yt-dlp: ${version}` : 'Motor yt-dlp: não encontrado';
+  } catch {
+    engineVersion.textContent = 'Motor yt-dlp: não encontrado';
+  }
+}
+
+engineUpdateBtn.addEventListener('click', async () => {
+  engineUpdateBtn.disabled = true;
+  engineUpdateBtn.textContent = 'Atualizando...';
+  try {
+    const version = await ipcRenderer.invoke('update-ytdlp');
+    engineVersion.textContent = `Motor yt-dlp: ${version}`;
+    showStatus(`Motor atualizado (versão ${version}).`, 'success');
+  } catch (error) {
+    showStatus('Erro ao atualizar o motor: ' + error.message, 'error');
+  } finally {
+    engineUpdateBtn.disabled = false;
+    engineUpdateBtn.textContent = 'Atualizar motor';
+  }
+});
+
 // Funções auxiliares
 function updateExtractButton() {
   const hasCookies = selectedCookiesPath !== null;
@@ -272,7 +299,7 @@ const modalContent = {
       </ul>
       
       <h3>Versão</h3>
-      <p>Versão 1.0.0</p>
+      <p>Versão 1.3.0</p>
       
       <h3>Desenvolvedor</h3>
       <p><strong>Usiel Amaral</strong></p>
@@ -293,21 +320,8 @@ const modalContent = {
     title: 'Requisitos do Sistema',
     body: `
       <h3>Software Necessário</h3>
-      <ul>
-        <li><strong>yt-dlp:</strong> Ferramenta de linha de comando para download de vídeos do YouTube</li>
-        <li><strong>Node.js:</strong> Runtime JavaScript (já incluído no Electron)</li>
-      </ul>
-      
-      <h3>Como Instalar o yt-dlp</h3>
-      
-      <h4>Linux (Ubuntu/Debian):</h4>
-      <code>sudo apt install yt-dlp</code>
-      
-      <h4>Ou via pip:</h4>
-      <code>pip install yt-dlp</code>
-      
-      <h4>Verificar Instalação:</h4>
-      <code>yt-dlp --version</code>
+      <p>Nada além do aplicativo. O motor de download (<strong>yt-dlp</strong>) já vem incluído e se atualiza sozinho uma vez por dia. Se um download falhar, use o botão <strong>"Atualizar motor"</strong> no rodapé da tela principal e tente novamente.</p>
+      <p>No Linux, a extração de MP3 usa o <strong>ffmpeg</strong> do sistema: <code>sudo apt install ffmpeg</code></p>
       
       <h3>Arquivo de Cookies</h3>
       <p>É necessário ter um arquivo de cookies (.txt) exportado do seu navegador. Veja a seção "Como obter Cookies" para instruções detalhadas.</p>
@@ -439,6 +453,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Inicialização
+loadEngineVersion();
 updateExtractButton();
 previewArea.style.display = 'none';
 progressContainer.style.display = 'none';
